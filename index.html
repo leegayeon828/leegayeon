@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>사격 게임 - 난이도 조절</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url('background.jpg') center/cover no-repeat;
+    }
+    .target {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: url('monster.png') center/contain no-repeat;
+      background-size: contain;
+      cursor: crosshair;
+      transition: transform 0.2s;
+    }
+    .target:hover {
+      transform: scale(1.1);
+    }
+    #scoreBoard, #timer {
+      position: absolute;
+      top: 15px;
+      padding: 10px 20px;
+      font-size: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border-radius: 10px;
+      z-index: 999;
+    }
+    #scoreBoard { left: 15px; }
+    #timer { right: 15px; }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="scoreBoard">점수: 0</div>
+    <div id="timer">시간: 30</div>
+  </div>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const scoreBoard = document.getElementById('scoreBoard');
+    const timerDisplay = document.getElementById('timer');
+    let score = 0;
+    let timeLeft = 30;
+    let gameInterval;
+
+    function getDifficultyTime() {
+      if (score >= 70) return 800;
+      if (score >= 30) return 1500;
+      return 2500;
+    }
+
+    function randomPosition(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function createTarget() {
+      const target = document.createElement('div');
+      target.classList.add('target');
+      const x = randomPosition(window.innerWidth - 120);
+      const y = randomPosition(window.innerHeight - 120);
+      target.style.left = `${x}px`;
+      target.style.top = `${y}px`;
+
+      target.addEventListener('click', () => {
+        score += 10;
+        scoreBoard.textContent = `점수: ${score}`;
+        target.remove();
+        createTarget();
+      });
+
+      gameArea.appendChild(target);
+
+      const duration = getDifficultyTime();  // 난이도에 따라 타겟 유지 시간 결정
+      setTimeout(() => {
+        if (gameArea.contains(target)) {
+          target.remove();
+          createTarget();
+        }
+      }, duration);
+    }
+
+    function startGame() {
+      createTarget();
+      gameInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `시간: ${timeLeft}`;
+        if (timeLeft <= 0) {
+          clearInterval(gameInterval);
+          document.querySelectorAll('.target').forEach(t => t.remove());
+          alert(`🎯 게임 종료! 당신의 점수는 ${score}점입니다.`);
+        }
+      }, 1000);
+    }
+
+    window.onload = startGame;
+  </script>
+</body>
+</html>
